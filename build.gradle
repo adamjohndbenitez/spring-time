@@ -1,5 +1,6 @@
 plugins {
 	id 'org.springframework.boot' version '2.5.0'
+//	id 'org.springframework.boot' version '2.4.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 }
@@ -19,11 +20,33 @@ dependencies {
 	// Added to use org.springframework.jdbc.core.JdbcTemplate;
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	runtimeOnly 'com.h2database:h2'
+
 	// Added to use  org.springframework.scheduling.annotation.Scheduled;
 	testImplementation 'org.awaitility:awaitility:3.1.2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	//
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	// tag::security[] commented-out skipping authenticating-ldap
+//	compile("org.springframework.boot:spring-boot-starter-security")
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	compile("org.springframework.ldap:spring-ldap-core")
+//	implementation 'org.springframework.ldap:spring-ldap-core'
+//	compile("org.springframework.security:spring-security-ldap")
+//	implementation 'org.springframework.security:spring-security-ldap'
+//	compile("com.unboundid:unboundid-ldapsdk")
+//	implementation 'com.unboundid:unboundid-ldapsdk'
+//	 end::security[]
+//	testCompile("org.springframework.security:spring-security-test")
+	// Added to use for redis messaging
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// Added to use for rabbitmq messaging
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	testImplementation 'org.springframework.boot:spring-rabbit-test'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// Added to use for neo4j
+	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
 }
 
 test {

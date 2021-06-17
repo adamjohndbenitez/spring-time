@@ -1,19 +1,34 @@
 package com.example.demo;
 
+import com.example.demo.accessingdataneo4j.Person;
+import com.example.demo.accessingdataneo4j.PersonRepository;
 import com.example.demo.consumingrest.Quote;
+//import com.example.demo.messagingrabbitmq.Receiver;
+import com.example.demo.messagingrabbitmq.ReceiverRabbitMQ;
+import com.example.demo.messagingredis.ReceiverRedis;
+import com.example.demo.messagingredis.ReceiverRedis;
 import com.example.demo.relationaldataaccess.Customer;
 import com.example.demo.uploadingfiles.storage.StorageProperties;
 import com.example.demo.uploadingfiles.storage.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
@@ -57,8 +72,19 @@ public class DemoApplication implements CommandLineRunner {
 	   - A CommandLineRunner that runs the RestTemplate (and, consequently, fetches our quotation) on startup. */
 	private static final Logger log = LoggerFactory.getLogger(DemoApplication.class);
 
-	public static void main(String[] args) {
-		SpringApplication.run(DemoApplication.class, args);
+	public static void main(String[] args) throws InterruptedException {
+//		SpringApplication.run(DemoApplication.class, args).close();
+		ApplicationContext ctx = SpringApplication.run(DemoApplication.class, args);
+		StringRedisTemplate template = ctx.getBean(StringRedisTemplate.class);
+		ReceiverRedis receiverRedis = ctx.getBean(ReceiverRedis.class);
+
+		while (receiverRedis.getCount() == 0) {
+			log.info("Sending message...");
+			template.convertAndSend("chat", "Hello from Redis!");
+			Thread.sleep(500L);
+		}
+
+		System.exit(0);
 	}
 
 	// Consuming a RESTful Web Service
@@ -128,6 +154,7 @@ public class DemoApplication implements CommandLineRunner {
 	   to create parameters for the query, passing in the actual values when you make the call. The last argument is a
 	   Java 8 lambda that is used to convert each result row into a new Customer object. */
 
+
 	@Bean
 	CommandLineRunner init(StorageService storageService) {
 		return (args -> {
@@ -142,6 +169,132 @@ public class DemoApplication implements CommandLineRunner {
 	   If you choose a file that is too large, you will get an ugly error page. You should then
 	   see a line resembling the following in your browser window:
 	   “You successfully uploaded <name of your file>!” */
+
+	// Messaging with Redis
+	@Bean
+	RedisMessageListenerContainer containerRedis(RedisConnectionFactory connectionFactory, org.springframework.data.redis.listener.adapter.MessageListenerAdapter listenerAdapter) {
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		container.addMessageListener((org.springframework.data.redis.connection.MessageListener) listenerAdapter, new PatternTopic("chat"));
+		return container;
+	}
+	/* The bean defined in the listenerAdapter method is registered as a message listener
+	   in the message listener container defined in container and will listen for messages
+	   on the chat topic. */
+
+	@Bean
+	org.springframework.data.redis.listener.adapter.MessageListenerAdapter listenerAdapterRedis(ReceiverRedis receiver) {
+		return new org.springframework.data.redis.listener.adapter.MessageListenerAdapter(receiver, "receiveMessage");
+	}
+
+	@Bean
+	ReceiverRedis receiver() {
+		return new ReceiverRedis();
+	}
+	/* The message listener adapter is also configured to call the receiveMessage() method
+	   on Receiver when a message arrives. */
+
+	@Bean
+	StringRedisTemplate template(RedisConnectionFactory connectionFactory) {
+		return new StringRedisTemplate(connectionFactory);
+	}
+	/* The connection factory and message listener container beans are all you need to listen
+	   for messages. To send a message, you also need a Redis template. Here, it is a bean
+	   configured as a StringRedisTemplate, an implementation of RedisTemplate that is focused
+	   on the common use of Redis, where both keys and values are String instances. */
+
+	// Messaging with RabbitMQ
+	public static final String TOPIC = "spring-boot-exchange";
+	public static final String QUEUE = "spring-boot";
+
+	@Bean
+	Queue queue() {
+		return new Queue(QUEUE, false);
+	}
+	/* The queue() method creates an AMQP queue.  */
+
+	@Bean
+	TopicExchange exchange() {
+		return new TopicExchange(TOPIC);
+	}
+	/* The exchange() method creates a topic exchange. */
+
+	@Bean
+	Binding binding(Queue queue, TopicExchange exchange) {
+		return BindingBuilder.bind(queue).to(exchange).with("foo.bar.#");
+	}
+	/* The binding() method binds these two together,
+	   defining the behavior that occurs when RabbitTemplate publishes to an exchange. */
+	/* Spring AMQP requires that the Queue, the TopicExchange,
+	   and the Binding be declared as top-level Spring beans in order to be set up properly. */
+	/* In this case, we use a topic exchange, and the queue is bound with a routing key of foo.bar.#,
+	   which means that any messages sent with a routing key that begins with foo.bar. are routed to the queue. */
+
+	@Bean
+	SimpleMessageListenerContainer containerRabbitMQ(ConnectionFactory connectionFactory,
+											 org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter listenerAdapter) {
+		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		container.setQueueNames(QUEUE);
+		container.setMessageListener(listenerAdapter);
+		return container;
+	}
+	/* The bean defined in the listenerAdapter() method is registered as a message listener
+	   in the container (defined in container()). It listens for messages on the spring-boot
+	   queue. Because the Receiver class is a POJO, it needs to be wrapped in the MessageListenerAdapter,
+	   where you specify that it invokes receiveMessage. */
+
+	@Bean
+	org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter listenerAdapterRabbitMQ(ReceiverRabbitMQ receiver) {
+		return new org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter(receiver, "receiveMessage");
+	} //'listenerAdapter(Receiver)' is already defined in 'com.example.demo.DemoApplication' under from rabbitmq.
+	/* Because the Receiver class is a POJO, it needs to be wrapped in
+	   a message listener adapter that implements the MessageListener interface
+	   (which is required by addMessageListener()). The message listener adapter is also
+	   configured to call the receiveMessage() method on Receiver when a message arrives. */
+
+	//TODO: we can do more - https://docs.spring.io/spring-amqp/reference/html/#preface
+
+	@Bean
+	CommandLineRunner demo(PersonRepository personRepository) {
+		return args -> {
+			personRepository.deleteAll();
+
+			Person jestoni = new Person("Jestoni Baguio");
+			Person armon = new Person("Armon Abrenica");
+			Person mikyu = new Person("Michelle Maglasang");
+
+			List<Person> team = Arrays.asList(jestoni, armon, mikyu);
+
+			log.info("Before linking up with Neo4j...");
+
+			team.forEach(person -> log.info("\t" + person.toString()));
+
+			personRepository.save(jestoni);
+			personRepository.save(mikyu);
+			personRepository.save(armon);
+
+			jestoni = personRepository.findByName(jestoni.getName());
+			jestoni.worksWith(armon);
+			jestoni.worksWith(mikyu);
+			personRepository.save(jestoni);
+
+			armon = personRepository.findByName(armon.getName());
+			armon.worksWith(mikyu);
+			// We already know that armon works with jestoni.
+			personRepository.save(armon);
+
+			// We already know craig works with mikyu and jestoni.
+
+			log.info("Lookup each person by name...");
+			team.stream().forEach(person -> log.info(
+					"\t" + personRepository.findByName(person.getName()).toString()));
+
+			List<Person> teammates = personRepository.findByTeammatesName(jestoni.getName());
+			log.info("The following have Greg as a teammate...");
+			teammates.forEach(person -> log.info("\t" + person.getName()));
+		};
+	}
 }
 
 /*
