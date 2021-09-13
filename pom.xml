@@ -14,7 +14,10 @@
 	<name>spring-time</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
-		<java.version>1.8</java.version>
+		<!--<java.version>1.8</java.version>-->
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<!--<java.version></java.version>--> <!-- [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.8.1:compile (default-compile) on project demo: Fatal error compiling: invalid target release: 13 -> [Help 1] -->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -43,7 +46,7 @@
 		<dependency> <!-- Added to use org.springframework.jdbc.core.JdbcTemplate -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
-			<version>5.3.7</version>
+			<!--<version>5.3.7</version>-->
 		</dependency>
 
 		<dependency>
@@ -111,8 +114,44 @@
 		</dependency>
 
 		<dependency>
+
+			<groupId>org.testng</groupId>
+
+			<artifactId>testng</artifactId>
+
+			<version>7.1.0</version>
+
+			<scope>compile</scope>
+
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-neo4j</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<!-- Added from Linkedin Learning: Create a Spring Boot Microservice -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -124,5 +163,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

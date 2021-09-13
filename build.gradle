@@ -1,5 +1,6 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.0'
+	id 'org.springframework.boot' version '2.5.2'
+//	id 'org.springframework.boot' version '2.5.0'
 //	id 'org.springframework.boot' version '2.4.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
@@ -25,6 +26,7 @@ dependencies {
 	testImplementation 'org.awaitility:awaitility:3.1.2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	//
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	// tag::security[] commented-out skipping authenticating-ldap
 //	compile("org.springframework.boot:spring-boot-starter-security")
@@ -41,12 +43,15 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	// Added to use for rabbitmq messaging
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
-	testImplementation 'org.springframework.boot:spring-rabbit-test'
-
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 
 	// Added to use for neo4j
 	implementation 'org.springframework.boot:spring-boot-starter-data-neo4j'
+
+	// Added from Linkedin Learning: Create a Spring Boot Microservice
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'com.h2database:h2'
+
 }
 
 test {
