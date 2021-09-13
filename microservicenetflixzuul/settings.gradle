@@ -1,0 +1,4 @@
+rootProject.name = 'microservicenetflixzuul'
+
+include 'book'
+include 'gateway'

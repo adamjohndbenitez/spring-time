@@ -1,0 +1,65 @@
+Testing Your Application:
+Make sure that both applications are running.
+In a browser, visit one of the book application’s endpoints through the Gateway application.
+If you have used the configuration shown in this guide,
+you can access the book application directly at localhost:8090/available
+and through the Gateway service at localhost:8080/books/available.
+
+Visit one of the Book service endpoints
+(localhost:8080/books/available or localhost:8080/books/checked-out)
+and you should see your request’s method logged by the Gateway application
+before it is handed on to the Book application, as the following sample logging output shows:
+
+
+2019-10-02 10:58:34.694  INFO 11608 --- [nio-8080-exec-4] c.e.r.filters.pre.SimpleFilter           : GET request to http://localhost:8080/books/available
+
+--REPLICATION STEPS--
+    open terminal
+    cd spring-time/microservicenetflixzuul/book/
+    ./gradlew bootRun
+
+    open another terminal
+    cd spring-time/microservicenetflixzuul/gateway/
+    ./gradlew bootRun
+
+--ACTUAL DISPLAY CONSOLE--
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+abenitezMBP:spring-time abenitez$ cd microservicenetflixzuul/gateway/
+abenitezMBP:gateway abenitez$ ./gradlew bootRun
+
+> Task :bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v2.3.7.RELEASE)
+
+2021-09-13 14:20:43.898  INFO 70155 --- [           main] .r.RoutingAndFilteringGatewayApplication : No active profile set, falling back to default profiles: default
+2021-09-13 14:20:44.712  WARN 70155 --- [           main] o.s.boot.actuate.endpoint.EndpointId     : Endpoint ID 'hystrix.stream' contains invalid characters, please migrate to a valid format.
+2021-09-13 14:20:44.919  INFO 70155 --- [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=b99613dc-a28d-341b-9907-cb987e67f681
+2021-09-13 14:20:45.791  INFO 70155 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2021-09-13 14:20:45.803  INFO 70155 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2021-09-13 14:20:45.803  INFO 70155 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.41]
+2021-09-13 14:20:45.973  INFO 70155 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2021-09-13 14:20:45.974  INFO 70155 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2058 ms
+2021-09-13 14:20:46.168  WARN 70155 --- [           main] c.n.c.sources.URLConfigurationSource     : No URLs will be polled as dynamic configuration sources.
+2021-09-13 14:20:46.168  INFO 70155 --- [           main] c.n.c.sources.URLConfigurationSource     : To enable URLs as dynamic configuration sources, define System property archaius.configurationSource.additionalUrls or make config.properties available on classpath.
+2021-09-13 14:20:46.181  INFO 70155 --- [           main] c.netflix.config.DynamicPropertyFactory  : DynamicPropertyFactory is initialized with configuration sources: com.netflix.config.ConcurrentCompositeConfiguration@4b2e3e8f
+2021-09-13 14:20:46.510  WARN 70155 --- [           main] o.s.c.n.a.ArchaiusAutoConfiguration      : No spring.application.name found, defaulting to 'application'
+2021-09-13 14:20:46.510  WARN 70155 --- [           main] c.n.c.sources.URLConfigurationSource     : No URLs will be polled as dynamic configuration sources.
+2021-09-13 14:20:46.510  INFO 70155 --- [           main] c.n.c.sources.URLConfigurationSource     : To enable URLs as dynamic configuration sources, define System property archaius.configurationSource.additionalUrls or make config.properties available on classpath.
+2021-09-13 14:20:46.755  INFO 70155 --- [           main] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'applicationTaskExecutor'
+2021-09-13 14:20:49.355  INFO 70155 --- [           main] o.s.c.n.zuul.ZuulFilterInitializer       : Starting filter initializer
+2021-09-13 14:20:49.410  INFO 70155 --- [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoint(s) beneath base path '/actuator'
+2021-09-13 14:20:49.763  INFO 70155 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2021-09-13 14:20:49.850  INFO 70155 --- [           main] .r.RoutingAndFilteringGatewayApplication : Started RoutingAndFilteringGatewayApplication in 6.832 seconds (JVM run2021-09-13 14:23:50.265  INFO 70155 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2021-09-13 14:23:50.266  INFO 70155 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2021-09-13 14:23:50.293  INFO 70155 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 26 ms
+2021-09-13 14:23:50.405  INFO 70155 --- [nio-8080-exec-1] c.e.r.filters.pre.SimpleFilter           : GET request to http://localhost:8080/books/checked-out
+2021-09-13 14:23:53.280  INFO 70155 --- [nio-8080-exec-2] c.e.r.filters.pre.SimpleFilter           : GET request to http://localhost:8080/books/available
