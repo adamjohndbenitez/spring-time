@@ -3,18 +3,20 @@ package com.example.demo;
 import com.example.demo.accessingdataneo4j.Person;
 import com.example.demo.accessingdataneo4j.PersonRepository;
 import com.example.demo.consumingrest.Quote;
-//import com.example.demo.messagingrabbitmq.Receiver;
-import com.example.demo.messagingrabbitmq.ReceiverRabbitMQ;
-import com.example.demo.messagingredis.ReceiverRedis;
 import com.example.demo.messagingredis.ReceiverRedis;
 import com.example.demo.relationaldataaccess.Customer;
 import com.example.demo.uploadingfiles.storage.StorageProperties;
 import com.example.demo.uploadingfiles.storage.StorageService;
+import java.util.Arrays;
+import java.util.List;
+
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,16 +29,10 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
-
-import org.springframework.jdbc.core.JdbcOperations;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <p>Test the Service
@@ -46,18 +42,23 @@ import java.util.stream.Collectors;
  * Provide a name query string parameter by visiting http://localhost:8080/greeting?name=User.
  * Notice how the value of the content attribute changes from Hello, World!
  * to Hello, User!, as the following listing shows:{"id":2,"content":"Hello, User!"}
- * This change demonstrates that the @RequestParam arrangement in GreetingController
+ * This change demonstrates that the @RequestParam arrangement in GreetingController1
  * is working as expected. The name parameter has been given a default value of World
  * but can be explicitly overridden through the query string.
  * Notice also how the id attribute has changed from 1 to 2.
- * This proves that you are working against the same GreetingController instance across
+ * This proves that you are working against the same GreetingController1 instance across
  * multiple requests and that its counter field is being incremented on each call as expected.
  * </p>
  * <p>
  *     @SpringBootApplication is a convenience annotation that adds all of the following:
  *     - @Configuration: Tags the class as a source of bean definitions for the application context.
- *     - @EnableAutoConfiguration: Tells Spring Boot to start adding beans based on classpath settings, other beans, and various property settings. For example, if spring-webmvc is on the classpath, this annotation flags the application as a web application and activates key behaviors, such as setting up a DispatcherServlet.
- *     - @ComponentScan: Tells Spring to look for other components, configurations, and services in the com/example package, letting it find the controllers.
+ *     - @EnableAutoConfiguration: Tells Spring Boot to start adding beans based on classpath settings,
+ *     								other beans, and various property settings. For example, if spring-webmvc
+ *     								is on the classpath, this annotation flags the application as a
+ *     								web application and activates key behaviors,
+ *     								such as setting up a DispatcherServlet.
+ *     - @ComponentScan: Tells Spring to look for other components, configurations, and services
+ *     					 in the com/example package, letting it find the controllers.
  * </p>
  */
 @SpringBootApplication
@@ -230,24 +231,24 @@ public class DemoApplication implements CommandLineRunner {
 	/* In this case, we use a topic exchange, and the queue is bound with a routing key of foo.bar.#,
 	   which means that any messages sent with a routing key that begins with foo.bar. are routed to the queue. */
 
-	@Bean
-	SimpleMessageListenerContainer containerRabbitMQ(ConnectionFactory connectionFactory,
-											 org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter listenerAdapter) {
-		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-		container.setConnectionFactory(connectionFactory);
-		container.setQueueNames(QUEUE);
-		container.setMessageListener(listenerAdapter);
-		return container;
-	}
+//	@Bean
+//	SimpleMessageListenerContainer containerRabbitMQ(ConnectionFactory connectionFactory,
+//											 org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter listenerAdapter) {
+//		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+//		container.setConnectionFactory(connectionFactory);
+//		container.setQueueNames(QUEUE);
+//		container.setMessageListener(listenerAdapter);
+//		return container;
+//	}
 	/* The bean defined in the listenerAdapter() method is registered as a message listener
 	   in the container (defined in container()). It listens for messages on the spring-boot
 	   queue. Because the Receiver class is a POJO, it needs to be wrapped in the MessageListenerAdapter,
 	   where you specify that it invokes receiveMessage. */
 
-	@Bean
-	org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter listenerAdapterRabbitMQ(ReceiverRabbitMQ receiver) {
-		return new org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter(receiver, "receiveMessage");
-	} //'listenerAdapter(Receiver)' is already defined in 'com.example.demo.DemoApplication' under from rabbitmq.
+//	@Bean
+//	org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter listenerAdapterRabbitMQ(ReceiverRabbitMQ receiver) {
+//		return new org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter(receiver, "receiveMessage");
+//	} //'listenerAdapter(Receiver)' is already defined in 'com.example.demo.DemoApplication' under from rabbitmq.
 	/* Because the Receiver class is a POJO, it needs to be wrapped in
 	   a message listener adapter that implements the MessageListener interface
 	   (which is required by addMessageListener()). The message listener adapter is also

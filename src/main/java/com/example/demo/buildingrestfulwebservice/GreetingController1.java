@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * This controller is concise and simple, but there is plenty going on under the hood.
  */
 @RestController // which marks the class as a controller where every method returns a domain object instead of a view. shorthand @Controller and @ResponseBody
-public class GreetingController {
+public class GreetingController1 {
     private static final String template = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
 
