@@ -66,9 +66,8 @@ public class Employee {
 
     @Override
     public String toString() {
-        return super.toString() +
-            "Employee{id=" + this.id + ", "
-            + "name='" + this.name + '\'' + ", "
-            + "role='" + this.role + '\'' + '}';
+        return " Employee{id=" + this.id + ", " +
+            "name='" + this.name + '\'' + ", " +
+            "role='" + this.role + '\'' + '}' + "\n";
     }
 }
