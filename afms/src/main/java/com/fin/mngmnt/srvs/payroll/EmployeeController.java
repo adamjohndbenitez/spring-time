@@ -63,6 +63,8 @@ class EmployeeController {
     Employee newEmployee(@RequestBody Employee newEmployee) {
         return repository.save(newEmployee);
     }
+    //^update POST method to handle "old" and "new" client requests and return a proper response
+    //check for @PostMapping("/employeesV2") in EmployeeController2 class
 
     // Single item
 

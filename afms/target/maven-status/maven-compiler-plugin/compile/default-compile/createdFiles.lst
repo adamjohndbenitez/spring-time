@@ -3,6 +3,8 @@ com/fin/mngmnt/srvs/payroll/EmployeeController.class
 com/fin/mngmnt/srvs/payroll/LoadDatabase.class
 com/fin/mngmnt/srvs/payroll/PayrollApplication.class
 com/fin/mngmnt/srvs/payroll/EmployeeRepository.class
+com/fin/mngmnt/srvs/payroll/EmployeeModelAssembler.class
 com/fin/mngmnt/srvs/payroll/EmployeeNotFoundException.class
 com/fin/mngmnt/srvs/payroll/Employee.class
 com/fin/mngmnt/srvs/payroll/EmployeeNotFoundAdvice.class
+com/fin/mngmnt/srvs/payroll/EmployeeController2.class
