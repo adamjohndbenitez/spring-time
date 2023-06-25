@@ -21,4 +21,6 @@ curl -v -X POST localhost:8080/employees -H 'Content-Type:application/json' -d '
 curl -v -X POST localhost:8080/employeesV2 -H 'Content-Type:application/json' -d '{"name": "Samwise Gamgee", "role": "gardener"}' | json_pp
 # remove with response returns an HTTP 204 No Content response.
 curl -v -X DELETE localhost:8080/employees/1
-
+#
+curl -v -X PUT localhost:8080/employees/3 -H 'Content-Type:application/json' -d '{"name": "Samwise Gamgee", "role": "ring bearer"}'
+#

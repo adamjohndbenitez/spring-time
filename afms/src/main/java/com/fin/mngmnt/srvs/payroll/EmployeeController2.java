@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
  * a copy of EmployeeController.class to separate methods differences between
  * {@code} @GetMapping("/employees") vs @GetMapping("/employeesV2") {@code}
  * since Ambiguous method call on all()
+ *
+ * Evolvable API with bare bones links.
+ * To grow your API and better serve your clients,
+ * you need to embrace the concept of
+ * Hypermedia as the Engine of Application State. HATEOAS
  */
 @RestController
 class EmployeeController2 {
@@ -85,4 +91,40 @@ class EmployeeController2 {
 
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Since we want a more detailed HTTP response code than 200 OK,
+     * we will use Spring MVC’s ResponseEntity wrapper.
+     * It has a handy static method created() where we can plug in the resource’s URI.
+     * It’s debatable if HTTP 201 Created carries the right semantics since
+     * we aren’t necessarily "creating" a new resource.
+     * But it comes pre-loaded with a Location response header
+     * @param newEmployee
+     * @param id
+     * @return
+     */
+    @PutMapping("/employeesV2/{id}")
+    ResponseEntity<?> replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id) {
+
+        //Employee built from save() operation
+        Employee updatedEmployee = repository.findById(id)
+            .map(employee -> {
+                employee.setName(newEmployee.getName());
+                employee.setRole(newEmployee.getRole());
+                return repository.save(employee);
+            })
+            .orElseGet(() -> {
+                newEmployee.setId(id);
+                return repository.save(newEmployee);
+            });
+
+        //Wrapped using EmployeeModelAssembler into EntityModel
+        EntityModel<Employee> entityModel = assembler.toModel(updatedEmployee);
+
+        return ResponseEntity
+            //returns a Link which must be turned into a URI with the toUri method.
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel);
+    }
+
 }
